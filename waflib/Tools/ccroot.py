@@ -181,7 +181,7 @@ def rm_tgt(cls):
 	setattr(cls, 'run', wrap)
 rm_tgt(stlink_task)
 
-@feature('c', 'cxx', 'd', 'fc', 'asm')
+@feature(*c_aliases.LINKING_FEATURES)
 @after_method('process_source')
 def apply_link(self):
 	"""

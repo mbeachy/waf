@@ -5,8 +5,10 @@
 "base for all c/c++ programs and libraries"
 
 import os, sys, re
-from waflib import Utils, Build
+from waflib import Utils, Build, Errors
 from waflib.Configure import conf
+
+LINKING_FEATURES = ('c','cxx','d','fc','asm')
 
 def get_extensions(lst):
 	"""
@@ -69,6 +71,21 @@ def sniff_features(**kw):
 def set_features(kw, _type):
 	kw['_type'] = _type
 	kw['features'] = Utils.to_list(kw.get('features', [])) + Utils.to_list(sniff_features(**kw))
+
+	if _type in ('program', 'shlib', 'stlib'):
+		# Make sure that a linking feature and a feature matching the type
+		# has been specified
+		for feat in kw['features']:
+			if feat in LINKING_FEATURES:
+				break
+		else:
+			raise Exception("A linking feature (one of %s) must be specified." % (", ".join(LINKING_FEATURES)))
+
+		for feat in kw['features']:
+			if feat.endswith(_type):
+				break
+		else:
+			raise Exception("A %s type (e.g. c%s or fc%s) must be specified in features." % (_type, _type, _type))
 
 @conf
 def program(bld, *k, **kw):
